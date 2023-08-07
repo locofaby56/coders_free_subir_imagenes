@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\File;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Intervention\Image\Facades\Image;
 
 
 class FileController extends Controller
@@ -39,15 +41,26 @@ class FileController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'file'=>'required|image|max:2048'
-        ]);
-        $imagenes = $request->file('file')->store('public/images');
-        $url = Storage::url($imagenes);
-        File::create([
-            'url'=>  $url
+            'file'=>'required|image'
         ]);
 
-        return redirect()->route('admin.files.index');
+        $nombre = Str::random(10). $request->file('file')->getClientOriginalName();
+        $ruta = storage_path(). '\app\public\images/'. $nombre;
+
+
+        // url de consulta https://image.intervention.io/v2/api/resize
+        Image::make($request->file('file'))
+        ->resize(1200, null, function ($constraint) {
+            $constraint->aspectRatio();
+        })->save($ruta);
+
+        File::create([
+            'url'=>'/storage/images/'.$nombre
+        ]);
+
+
+
+        
     }
 
     /**
