@@ -55,6 +55,7 @@ class FileController extends Controller
         })->save($ruta);
 
         File::create([
+            'user_id'=> auth()->user()->id,
             'url'=>'/storage/images/'.$nombre
         ]);
 
